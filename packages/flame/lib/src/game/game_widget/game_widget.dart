@@ -237,7 +237,7 @@ class _GameWidgetState<T extends Game> extends State<GameWidget<T>> {
   Widget build(BuildContext context) {
     return _protectedBuild(() {
       final game = widget.game;
-      Widget internalGameWidget = _GameRenderObjectWidget(game);
+      Widget internalGameWidget = RenderGameWidget(game);
 
       _checkOverlays(widget.game.overlays.value);
       assert(
@@ -290,8 +290,7 @@ class _GameWidgetState<T extends Game> extends State<GameWidget<T>> {
                   return _protectedBuild(() {
                     final size = constraints.biggest.toVector2();
                     if (size.isZero()) {
-                      return widget.loadingBuilder?.call(context) ??
-                          Container();
+                      return buildLoading(context);
                     }
                     game.onGameResize(size);
                     return FutureBuilder(
@@ -311,8 +310,7 @@ class _GameWidgetState<T extends Game> extends State<GameWidget<T>> {
                         if (snapshot.connectionState == ConnectionState.done) {
                           return Stack(children: stackedWidgets);
                         }
-                        return widget.loadingBuilder?.call(context) ??
-                            Container();
+                        return buildLoading(context);
                       },
                     );
                   });
@@ -323,6 +321,10 @@ class _GameWidgetState<T extends Game> extends State<GameWidget<T>> {
         ),
       );
     });
+  }
+
+  Widget buildLoading(BuildContext context) {
+    return widget.loadingBuilder?.call(context) ?? const SizedBox.shrink();
   }
 
   List<Widget> _addBackground(BuildContext context, List<Widget> stackWidgets) {
@@ -350,21 +352,5 @@ class _GameWidgetState<T extends Game> extends State<GameWidget<T>> {
     });
     stackWidgets.addAll(widgets);
     return stackWidgets;
-  }
-}
-
-class _GameRenderObjectWidget extends LeafRenderObjectWidget {
-  final Game game;
-
-  const _GameRenderObjectWidget(this.game);
-
-  @override
-  RenderBox createRenderObject(BuildContext context) {
-    return GameRenderBox(context, game);
-  }
-
-  @override
-  void updateRenderObject(BuildContext context, GameRenderBox renderObject) {
-    renderObject.game = game;
   }
 }
